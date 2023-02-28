@@ -97,9 +97,11 @@ struct ShaderBuilder {
     skip_block_layout: bool,
     #[arg(long, default_value = "false")]
     preserve_bindings: bool,
-    /// If set, will watch the provided path and recompile on change
+    /// If set, will watch the provided directory and recompile on change.
+    /// 
+    /// Can be specified multiple times to watch more than one directory.
     #[arg(short, long)]
-    watch_path: Option<String>,
+    watch_paths: Option<Vec<String>>,
 }
 
 impl ShaderBuilder {
@@ -138,7 +140,7 @@ fn main() {
     }
     println!();
 
-    if args.watch_path.is_none() {
+    if args.watch_paths.is_none() {
         return;
     };
 
@@ -151,16 +153,19 @@ fn main() {
     let fut_values = async move {
         let mut args = args;
 
-        let Some(watch_path) = args.watch_path.take() else {
+        let Some(watch_paths) = args.watch_paths.take() else {
             unreachable!();
         };
 
-        info!("Watching {watch_path:} for changes...");
         println!();
         {
-            pool.spawn_ok(async move {
-                async_watch(watch_path, change_tx).await.unwrap();
-            });
+            for path in watch_paths {
+                info!("Watching {path:} for changes...");
+                let change_tx = change_tx.clone();
+                pool.spawn_ok(async move {
+                    async_watch(path, change_tx).await.unwrap();
+                });
+            }
         }
 
         loop {

@@ -19,6 +19,7 @@ use spirv_builder::{
 
 use tracing::{error, info};
 
+/// Instantiate an async watcher and return it alongside a channel to receive events on.
 fn async_watcher() -> notify::Result<(RecommendedWatcher, Receiver<notify::Result<Event>>)> {
     let (mut tx, rx) = channel(1);
 
@@ -36,9 +37,10 @@ fn async_watcher() -> notify::Result<(RecommendedWatcher, Receiver<notify::Resul
     Ok((watcher, rx))
 }
 
+/// Watch a file or directory, sending relevant events through the provided channel.
 async fn async_watch<P: AsRef<Path>>(
     path: P,
-    mut change_tx: UnboundedSender<()>,
+    mut event_tx: UnboundedSender<()>,
 ) -> Result<(), Box<dyn Error>> {
     let path = path.as_ref();
     let path = std::fs::canonicalize(path)
@@ -53,12 +55,18 @@ async fn async_watch<P: AsRef<Path>>(
     while let Some(res) = rx.next().await {
         match res {
             Ok(event) => {
-                if path.is_dir() || event.paths.iter().find(|candidate| {
-                    std::fs::canonicalize(candidate)
-                        .unwrap_or_else(|e| panic!("Failed to canonicalize path {path:?}: {e:}"))
-                        == path
-                }).is_some() {
-                    change_tx.send(()).await.unwrap();
+                if path.is_dir()
+                    || event
+                        .paths
+                        .iter()
+                        .find(|candidate| {
+                            std::fs::canonicalize(candidate).unwrap_or_else(|e| {
+                                panic!("Failed to canonicalize path {path:?}: {e:}")
+                            }) == path
+                        })
+                        .is_some()
+                {
+                    event_tx.send(()).await.unwrap();
                 }
             }
             Err(e) => error!("Watch error: {:?}", e),
@@ -68,6 +76,7 @@ async fn async_watch<P: AsRef<Path>>(
     Ok(())
 }
 
+/// Clap value parser for [`SpirvMetadata`].
 fn spirv_metadata(s: &str) -> Result<SpirvMetadata, clap::Error> {
     match s {
         "none" => Ok(SpirvMetadata::None),
@@ -77,34 +86,53 @@ fn spirv_metadata(s: &str) -> Result<SpirvMetadata, clap::Error> {
     }
 }
 
+/// Clap application struct.
 #[derive(Debug, Clone, Parser)]
 #[command(author, version, about, long_about = None)]
 struct ShaderBuilder {
-    /// Shader crate to compile
+    /// Shader crate to compile.
     path_to_crate: PathBuf,
-    /// rust-gpu compile target
+    /// rust-gpu compile target.
     #[arg(short, long, default_value = "spirv-unknown-spv1.5")]
     target: String,
+    /// Treat warnings as errors during compilation.
     #[arg(long, default_value = "false")]
     deny_warnings: bool,
+    /// Compile shaders in release mode.
     #[arg(long, default_value = "true")]
     release: bool,
+    /// Compile one .spv file per entry point.
     #[arg(long, default_value = "false")]
     multimodule: bool,
+    /// Set the level of metadata included in the SPIR-V binary.
     #[arg(long, value_parser=spirv_metadata, default_value = "none")]
     spirv_metadata: SpirvMetadata,
+    /// Allow store from one struct type to a different type with compatible layout and members.
     #[arg(long, default_value = "false")]
     relax_struct_store: bool,
+    /// Allow allocating an object of a pointer type and returning a pointer value from a function
+    /// in logical addressing mode.
     #[arg(long, default_value = "false")]
     relax_logical_pointer: bool,
+    /// Enable VK_KHR_relaxed_block_layout when checking standard uniform,
+    /// storage buffer, and push constant layouts.
+    /// This is the default when targeting Vulkan 1.1 or later.
     #[arg(long, default_value = "false")]
     relax_block_layout: bool,
+    /// Enable VK_KHR_uniform_buffer_standard_layout when checking standard uniform buffer layouts.
     #[arg(long, default_value = "false")]
     uniform_buffer_standard_layout: bool,
+    /// Enable VK_EXT_scalar_block_layout when checking standard uniform, storage buffer, and push
+    /// constant layouts.
+    /// Scalar layout rules are more permissive than relaxed block layout so in effect this will
+    /// override the --relax-block-layout option.
     #[arg(long, default_value = "false")]
     scalar_block_layout: bool,
+    /// Skip checking standard uniform / storage buffer layout. Overrides any --relax-block-layout
+    /// or --scalar-block-layout option.
     #[arg(long, default_value = "false")]
     skip_block_layout: bool,
+    /// Preserve unused descriptor bindings. Useful for reflection.
     #[arg(long, default_value = "false")]
     preserve_bindings: bool,
     /// If set, will watch the provided directory and recompile on change.
@@ -115,6 +143,7 @@ struct ShaderBuilder {
 }
 
 impl ShaderBuilder {
+    /// Builds a shader with the provided set of options.
     pub fn build_shader(&self) -> Result<CompileResult, SpirvBuilderError> {
         SpirvBuilder::new(&self.path_to_crate, &self.target)
             .deny_warnings(self.deny_warnings)

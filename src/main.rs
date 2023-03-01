@@ -40,6 +40,10 @@ async fn async_watch<P: AsRef<Path>>(
     path: P,
     mut change_tx: UnboundedSender<()>,
 ) -> Result<(), Box<dyn Error>> {
+    let path = path.as_ref();
+    let path = std::fs::canonicalize(path)
+        .unwrap_or_else(|e| panic!("Failed to canonicalize path {path:?}: {e:}"));
+
     let (mut watcher, mut rx) = async_watcher()?;
 
     // Add a path to be watched. All files and directories at that path and
@@ -48,8 +52,14 @@ async fn async_watch<P: AsRef<Path>>(
 
     while let Some(res) = rx.next().await {
         match res {
-            Ok(_) => {
-                change_tx.send(()).await.unwrap();
+            Ok(event) => {
+                if path.is_dir() || event.paths.iter().find(|candidate| {
+                    std::fs::canonicalize(candidate)
+                        .unwrap_or_else(|e| panic!("Failed to canonicalize path {path:?}: {e:}"))
+                        == path
+                }).is_some() {
+                    change_tx.send(()).await.unwrap();
+                }
             }
             Err(e) => error!("Watch error: {:?}", e),
         }
@@ -98,7 +108,7 @@ struct ShaderBuilder {
     #[arg(long, default_value = "false")]
     preserve_bindings: bool,
     /// If set, will watch the provided directory and recompile on change.
-    /// 
+    ///
     /// Can be specified multiple times to watch more than one directory.
     #[arg(short, long)]
     watch_paths: Option<Vec<String>>,

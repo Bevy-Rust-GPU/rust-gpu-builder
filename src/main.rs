@@ -40,7 +40,7 @@ fn async_watcher() -> notify::Result<(RecommendedWatcher, Receiver<notify::Resul
 /// Watch a file or directory, sending relevant events through the provided channel.
 async fn async_watch<P: AsRef<Path>>(
     path: P,
-    mut event_tx: UnboundedSender<()>,
+    mut change_tx: UnboundedSender<()>,
 ) -> Result<(), Box<dyn Error>> {
     let path = path.as_ref();
     let path = std::fs::canonicalize(path)
@@ -50,7 +50,12 @@ async fn async_watch<P: AsRef<Path>>(
 
     // Add a path to be watched. All files and directories at that path and
     // below will be monitored for changes.
-    watcher.watch(path.as_ref(), RecursiveMode::Recursive)?;
+    let watch_path = if path.is_dir() {
+        path.clone()
+    } else {
+        path.parent().unwrap().to_owned()
+    };
+    watcher.watch(watch_path.as_ref(), RecursiveMode::Recursive)?;
 
     while let Some(res) = rx.next().await {
         match res {
@@ -59,14 +64,10 @@ async fn async_watch<P: AsRef<Path>>(
                     || event
                         .paths
                         .iter()
-                        .find(|candidate| {
-                            std::fs::canonicalize(candidate).unwrap_or_else(|e| {
-                                panic!("Failed to canonicalize path {path:?}: {e:}")
-                            }) == path
-                        })
+                        .find(|candidate| **candidate == path)
                         .is_some()
                 {
-                    event_tx.send(()).await.unwrap();
+                    change_tx.send(()).await.unwrap();
                 }
             }
             Err(e) => error!("Watch error: {:?}", e),

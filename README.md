@@ -1,8 +1,12 @@
-# rust-gpu-builder
+<div align="center">
+# `rust-gpu-builder`
+
+[![Documentation](https://img.shields.io/badge/docs-API-blue)](https://bevy-rust-gpu.github.io/bevy-rust-gpu/rust-gpu-builder/)
 
 `rust-gpu` helper program for automating shader crate compilation.
 
 Can compile once, or run in daemon mode and recompile in response to filesystem changes.
+</div>
 
 ## Usage
 

@@ -77,7 +77,7 @@ async fn async_watch<P: AsRef<Path>>(
     Ok(())
 }
 
-/// Clap value parser for [`SpirvMetadata`].
+/// Clap value parser for `SpirvMetadata`.
 fn spirv_metadata(s: &str) -> Result<SpirvMetadata, clap::Error> {
     match s {
         "none" => Ok(SpirvMetadata::None),

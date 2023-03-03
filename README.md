@@ -12,7 +12,7 @@ Can compile once, or run in daemon mode and recompile in response to filesystem 
 
 ## Usage
 
-`rust-gpu-builder` relies on the `spirv-builder` crate, which in turn relies on the cargo ecosystem
+`rust-gpu-builder` relies on the [`spirv-builder`](https://embarkstudios.github.io/rust-gpu/api/spirv_builder/) crate, which in turn relies on the cargo ecosystem
 to configure the appropriate nightly toolchain for `rust-gpu`. As such, it needs to be run from inside a workspace via `cargo run`.
 
 Thus, it's recommended to add `rust-gpu-builder` as a a git submodule of your cargo workspace, and set it up as the default binary target.

@@ -693,9 +693,9 @@ checksum = "08d43f7aa6b08d49f382cde6a7982047c3426db949b1424bc4b7ec9ae12c6ce2"
 
 [[package]]
 name = "rustc_codegen_spirv"
-version = "0.5.0"
+version = "0.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1b803b49618cdde99e1065af9415f489b993374765e30a6b80f2bea2cca65914"
+checksum = "2a5f05b5fcaa46cb4a7562171b552df03ffda56b5b7d2be95bc8add874f4a56f"
 dependencies = [
  "ar",
  "either",
@@ -720,9 +720,9 @@ dependencies = [
 
 [[package]]
 name = "rustc_codegen_spirv-types"
-version = "0.5.0"
+version = "0.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "330aedc6b09b9bf3c58cc7fb942c1377310a9cff00fae9e4f6cc09a7a28f542e"
+checksum = "e7e2abcad6ba026e292502f9952f8d7105b1faf95bce4d236bc5518af103411b"
 dependencies = [
  "rspirv",
  "serde",
@@ -855,9 +855,9 @@ dependencies = [
 
 [[package]]
 name = "spirv-builder"
-version = "0.5.0"
+version = "0.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "93f656f97ac742e5603843d2ea3ea644cdf5630635b3320ec87666385766e7ab"
+checksum = "8479379a6f9d3e15f6010fdb24e5ced6823bf64ac322d9f920c15df84c0bf04e"
 dependencies = [
  "memchr",
  "raw-string",

@@ -5,7 +5,7 @@ edition = "2021"
 build = false
 
 [dependencies]
-spirv-builder = "0.5.0"
+spirv-builder = "0.6.0"
 ctrlc = "3.2.5"
 notify = "5.1.0"
 futures = { version = "0.3.26", features = ["thread-pool"] }

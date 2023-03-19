@@ -94,7 +94,7 @@ struct ShaderBuilder {
     /// Shader crate to compile.
     path_to_crate: PathBuf,
     /// rust-gpu compile target.
-    #[arg(short, long, default_value = "spirv-unknown-spv1.5")]
+    #[arg(short, long, default_value = "spirv-unknown-vulkan1.2")]
     target: String,
     /// Treat warnings as errors during compilation.
     #[arg(long, default_value = "false")]

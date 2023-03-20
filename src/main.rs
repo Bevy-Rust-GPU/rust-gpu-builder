@@ -1,8 +1,11 @@
 use std::{
+    collections::BTreeMap,
     error::Error,
     path::{Path, PathBuf},
     str::FromStr,
 };
+
+use rust_gpu_builder_shared::{RustGpuBuilderModules, RustGpuBuilderOutput};
 
 use clap::{error::ErrorKind, Parser};
 
@@ -25,6 +28,8 @@ use tracing::{error, info};
 struct ShaderBuilder {
     /// Shader crate to compile.
     path_to_crate: PathBuf,
+    /// If set, combined SPIR-V and entrypoint metadata will be written to this file on succesful compile.
+    output_path: Option<PathBuf>,
     /// rust-gpu compile target.
     #[arg(short, long, default_value = "spirv-unknown-vulkan1.2")]
     target: String,
@@ -184,6 +189,66 @@ async fn async_watch<P: AsRef<Path>>(
     Ok(())
 }
 
+async fn handle_compile_result(result: CompileResult, output_path: Option<PathBuf>) {
+    info!("Entry Points:");
+    for entry in &result.entry_points {
+        println!("{entry:}");
+    }
+
+    let entry_points = result.entry_points;
+
+    println!();
+
+    info!("Modules:");
+    match &result.module {
+        spirv_builder::ModuleResult::SingleModule(single) => {
+            println!("{single:?}");
+        }
+
+        spirv_builder::ModuleResult::MultiModule(multi) => {
+            for (k, module) in multi {
+                println!("{k:}: {module:?}");
+            }
+        }
+    };
+
+    let Some(output_path) = output_path else {
+                                    return
+                                };
+
+    let modules = match result.module {
+        spirv_builder::ModuleResult::SingleModule(single) => {
+            let module = async_fs::read(single)
+                .await
+                .expect("Failed to read module file");
+            RustGpuBuilderModules::Single(module)
+        }
+
+        spirv_builder::ModuleResult::MultiModule(multi) => {
+            let mut out = BTreeMap::default();
+            for (k, module) in multi {
+                let module = async_fs::read(module)
+                    .await
+                    .expect("Failed to read module file");
+                out.insert(k, module);
+            }
+            RustGpuBuilderModules::Multi(out)
+        }
+    };
+
+    let out = RustGpuBuilderOutput {
+        entry_points,
+        modules,
+    };
+
+    let out = serde_json::to_string_pretty(&out).expect("Failed to serialize output");
+    async_fs::write(&output_path, out)
+        .await
+        .expect("Failed to write output");
+    println!();
+    info!("Wrote output to {output_path:?}");
+}
+
 fn main() {
     tracing_subscriber::fmt().init();
 
@@ -194,8 +259,9 @@ fn main() {
     println!();
 
     info!("Building shader...");
-    if args.build_shader().is_ok() {
-        info!("Build complete!");
+    println!();
+    if let Ok(result) = args.build_shader() {
+        future::block_on(handle_compile_result(result, args.output_path.clone()));
     } else {
         error!("Build failed!");
     }
@@ -227,7 +293,9 @@ fn main() {
                     Ok(Msg::Change) => {
                         if !building {
                             building = true;
+                            println!();
                             info!("Building shader...");
+                            println!();
                             ex.spawn({
                                 let build_tx = build_tx.clone();
                                 let args = args.clone();
@@ -242,8 +310,10 @@ fn main() {
                         }
                     }
                     Ok(Msg::Build(result)) => {
-                        if result.is_ok() {
-                            info!("Build complete!");
+                        if let Ok(result) = result {
+                            let output_path = args.output_path.clone();
+                            ex.spawn(handle_compile_result(result, output_path))
+                                .detach();
                         } else {
                             error!("Build failed!");
                         }

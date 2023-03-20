@@ -242,9 +242,26 @@
 <a href="#242" id="242">242</a>
 <a href="#243" id="243">243</a>
 <a href="#244" id="244">244</a>
+<a href="#245" id="245">245</a>
+<a href="#246" id="246">246</a>
+<a href="#247" id="247">247</a>
+<a href="#248" id="248">248</a>
+<a href="#249" id="249">249</a>
+<a href="#250" id="250">250</a>
+<a href="#251" id="251">251</a>
+<a href="#252" id="252">252</a>
+<a href="#253" id="253">253</a>
+<a href="#254" id="254">254</a>
+<a href="#255" id="255">255</a>
+<a href="#256" id="256">256</a>
+<a href="#257" id="257">257</a>
+<a href="#258" id="258">258</a>
+<a href="#259" id="259">259</a>
+<a href="#260" id="260">260</a>
 </pre><pre class="rust"><code><span class="kw">use </span>std::{
     error::Error,
     path::{Path, PathBuf},
+    str::FromStr,
 };
 
 <span class="kw">use </span>clap::{error::ErrorKind, Parser};
@@ -258,7 +275,7 @@
 <span class="kw">use </span>notify::{Event, RecommendedWatcher, RecursiveMode, Watcher};
 
 <span class="kw">use </span>spirv_builder::{
-    CompileResult, MetadataPrintout, SpirvBuilder, SpirvBuilderError, SpirvMetadata,
+    Capability, CompileResult, MetadataPrintout, SpirvBuilder, SpirvBuilderError, SpirvMetadata,
 };
 
 <span class="kw">use </span>tracing::{error, info};
@@ -331,6 +348,13 @@
     }
 }
 
+<span class="kw">fn </span>spirv_capability(s: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;Capability, clap::Error&gt; {
+    <span class="kw">match </span>Capability::from_str(s) {
+        <span class="prelude-val">Ok</span>(capability) =&gt; <span class="prelude-val">Ok</span>(capability),
+        <span class="prelude-val">Err</span>(<span class="kw">_</span>) =&gt; <span class="prelude-val">Err</span>(clap::Error::new(ErrorKind::InvalidValue)),
+    }
+}
+
 <span class="doccomment">/// Clap application struct.
 </span><span class="attr">#[derive(Debug, Clone, Parser)]
 #[command(author, version, about, long_about = <span class="prelude-val">None</span>)]
@@ -346,6 +370,9 @@
     <span class="doccomment">/// Compile shaders in release mode.
     </span><span class="attr">#[arg(long, default_value = <span class="string">&quot;true&quot;</span>)]
     </span>release: bool,
+    <span class="doccomment">/// Enables the provided SPIR-V capability.
+    </span><span class="attr">#[arg(long, value_parser=spirv_capability)]
+    </span>capability: Vec&lt;Capability&gt;,
     <span class="doccomment">/// Compile one .spv file per entry point.
     </span><span class="attr">#[arg(long, default_value = <span class="string">&quot;false&quot;</span>)]
     </span>multimodule: bool,
@@ -390,7 +417,7 @@
 <span class="kw">impl </span>ShaderBuilder {
     <span class="doccomment">/// Builds a shader with the provided set of options.
     </span><span class="kw">pub fn </span>build_shader(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;CompileResult, SpirvBuilderError&gt; {
-        SpirvBuilder::new(<span class="kw-2">&amp;</span><span class="self">self</span>.path_to_crate, <span class="kw-2">&amp;</span><span class="self">self</span>.target)
+        <span class="kw">let </span><span class="kw-2">mut </span>builder = SpirvBuilder::new(<span class="kw-2">&amp;</span><span class="self">self</span>.path_to_crate, <span class="kw-2">&amp;</span><span class="self">self</span>.target)
             .deny_warnings(<span class="self">self</span>.deny_warnings)
             .release(<span class="self">self</span>.release)
             .multimodule(<span class="self">self</span>.multimodule)
@@ -402,8 +429,13 @@
             .scalar_block_layout(<span class="self">self</span>.scalar_block_layout)
             .skip_block_layout(<span class="self">self</span>.skip_block_layout)
             .preserve_bindings(<span class="self">self</span>.preserve_bindings)
-            .print_metadata(MetadataPrintout::None)
-            .build()
+            .print_metadata(MetadataPrintout::None);
+
+        <span class="kw">for </span>capability <span class="kw">in </span><span class="kw-2">&amp;</span><span class="self">self</span>.capability {
+            builder = builder.capability(<span class="kw-2">*</span>capability);
+        }
+
+        builder.build()
     }
 }
 

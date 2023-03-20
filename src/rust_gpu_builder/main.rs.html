@@ -258,6 +258,8 @@
 <a href="#258" id="258">258</a>
 <a href="#259" id="259">259</a>
 <a href="#260" id="260">260</a>
+<a href="#261" id="261">261</a>
+<a href="#262" id="262">262</a>
 </pre><pre class="rust"><code><span class="kw">use </span>std::{
     error::Error,
     path::{Path, PathBuf},
@@ -266,11 +268,10 @@
 
 <span class="kw">use </span>clap::{error::ErrorKind, Parser};
 
-<span class="kw">use </span>futures::{
-    channel::mpsc::{<span class="self">self</span>, channel, Receiver, UnboundedSender},
-    executor::{<span class="self">self</span>, ThreadPool},
-    select, SinkExt, StreamExt,
-};
+<span class="kw">use </span>async_channel::{unbounded, Receiver, Sender};
+<span class="kw">use </span>async_executor::Executor;
+<span class="kw">use </span>easy_parallel::Parallel;
+<span class="kw">use </span>futures_lite::future;
 
 <span class="kw">use </span>notify::{Event, RecommendedWatcher, RecursiveMode, Watcher};
 
@@ -279,81 +280,6 @@
 };
 
 <span class="kw">use </span>tracing::{error, info};
-
-<span class="doccomment">/// Instantiate an async watcher and return it alongside a channel to receive events on.
-</span><span class="kw">fn </span>async_watcher() -&gt; notify::Result&lt;(RecommendedWatcher, Receiver&lt;notify::Result&lt;Event&gt;&gt;)&gt; {
-    <span class="kw">let </span>(<span class="kw-2">mut </span>tx, rx) = channel(<span class="number">1</span>);
-
-    <span class="comment">// Automatically select the best implementation for your platform.
-    // You can also access each implementation directly e.g. INotifyWatcher.
-    </span><span class="kw">let </span>watcher = RecommendedWatcher::new(
-        <span class="kw">move </span>|res| {
-            futures::executor::block_on(<span class="kw">async </span>{
-                tx.send(res).<span class="kw">await</span>.unwrap();
-            })
-        },
-        Default::default(),
-    )<span class="question-mark">?</span>;
-
-    <span class="prelude-val">Ok</span>((watcher, rx))
-}
-
-<span class="doccomment">/// Watch a file or directory, sending relevant events through the provided channel.
-</span><span class="kw">async fn </span>async_watch&lt;P: AsRef&lt;Path&gt;&gt;(
-    path: P,
-    <span class="kw-2">mut </span>change_tx: UnboundedSender&lt;()&gt;,
-) -&gt; <span class="prelude-ty">Result</span>&lt;(), Box&lt;<span class="kw">dyn </span>Error&gt;&gt; {
-    <span class="kw">let </span>path = path.as_ref();
-    <span class="kw">let </span>path = std::fs::canonicalize(path)
-        .unwrap_or_else(|e| <span class="macro">panic!</span>(<span class="string">&quot;Failed to canonicalize path {path:?}: {e:}&quot;</span>));
-
-    <span class="kw">let </span>(<span class="kw-2">mut </span>watcher, <span class="kw-2">mut </span>rx) = async_watcher()<span class="question-mark">?</span>;
-
-    <span class="comment">// Add a path to be watched. All files and directories at that path and
-    // below will be monitored for changes.
-    </span><span class="kw">let </span>watch_path = <span class="kw">if </span>path.is_dir() {
-        path.clone()
-    } <span class="kw">else </span>{
-        path.parent().unwrap().to_owned()
-    };
-    watcher.watch(watch_path.as_ref(), RecursiveMode::Recursive)<span class="question-mark">?</span>;
-
-    <span class="kw">while let </span><span class="prelude-val">Some</span>(res) = rx.next().<span class="kw">await </span>{
-        <span class="kw">match </span>res {
-            <span class="prelude-val">Ok</span>(event) =&gt; {
-                <span class="kw">if </span>path.is_dir()
-                    || event
-                        .paths
-                        .iter()
-                        .find(|candidate| <span class="kw-2">**</span>candidate == path)
-                        .is_some()
-                {
-                    change_tx.send(()).<span class="kw">await</span>.unwrap();
-                }
-            }
-            <span class="prelude-val">Err</span>(e) =&gt; <span class="macro">error!</span>(<span class="string">&quot;Watch error: {:?}&quot;</span>, e),
-        }
-    }
-
-    <span class="prelude-val">Ok</span>(())
-}
-
-<span class="doccomment">/// Clap value parser for `SpirvMetadata`.
-</span><span class="kw">fn </span>spirv_metadata(s: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;SpirvMetadata, clap::Error&gt; {
-    <span class="kw">match </span>s {
-        <span class="string">&quot;none&quot; </span>=&gt; <span class="prelude-val">Ok</span>(SpirvMetadata::None),
-        <span class="string">&quot;name-variables&quot; </span>=&gt; <span class="prelude-val">Ok</span>(SpirvMetadata::NameVariables),
-        <span class="string">&quot;full&quot; </span>=&gt; <span class="prelude-val">Ok</span>(SpirvMetadata::Full),
-        <span class="kw">_ </span>=&gt; <span class="prelude-val">Err</span>(clap::Error::new(ErrorKind::InvalidValue)),
-    }
-}
-
-<span class="kw">fn </span>spirv_capability(s: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;Capability, clap::Error&gt; {
-    <span class="kw">match </span>Capability::from_str(s) {
-        <span class="prelude-val">Ok</span>(capability) =&gt; <span class="prelude-val">Ok</span>(capability),
-        <span class="prelude-val">Err</span>(<span class="kw">_</span>) =&gt; <span class="prelude-val">Err</span>(clap::Error::new(ErrorKind::InvalidValue)),
-    }
-}
 
 <span class="doccomment">/// Clap application struct.
 </span><span class="attr">#[derive(Debug, Clone, Parser)]
@@ -371,13 +297,13 @@
     </span><span class="attr">#[arg(long, default_value = <span class="string">&quot;true&quot;</span>)]
     </span>release: bool,
     <span class="doccomment">/// Enables the provided SPIR-V capability.
-    </span><span class="attr">#[arg(long, value_parser=spirv_capability)]
+    </span><span class="attr">#[arg(long, value_parser=<span class="self">Self</span>::spirv_capability)]
     </span>capability: Vec&lt;Capability&gt;,
     <span class="doccomment">/// Compile one .spv file per entry point.
     </span><span class="attr">#[arg(long, default_value = <span class="string">&quot;false&quot;</span>)]
     </span>multimodule: bool,
     <span class="doccomment">/// Set the level of metadata included in the SPIR-V binary.
-    </span><span class="attr">#[arg(long, value_parser=spirv_metadata, default_value = <span class="string">&quot;none&quot;</span>)]
+    </span><span class="attr">#[arg(long, value_parser=<span class="self">Self</span>::spirv_metadata, default_value = <span class="string">&quot;none&quot;</span>)]
     </span>spirv_metadata: SpirvMetadata,
     <span class="doccomment">/// Allow store from one struct type to a different type with compatible layout and members.
     </span><span class="attr">#[arg(long, default_value = <span class="string">&quot;false&quot;</span>)]
@@ -415,6 +341,24 @@
 }
 
 <span class="kw">impl </span>ShaderBuilder {
+    <span class="doccomment">/// Clap value parser for `SpirvMetadata`.
+    </span><span class="kw">fn </span>spirv_metadata(s: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;SpirvMetadata, clap::Error&gt; {
+        <span class="kw">match </span>s {
+            <span class="string">&quot;none&quot; </span>=&gt; <span class="prelude-val">Ok</span>(SpirvMetadata::None),
+            <span class="string">&quot;name-variables&quot; </span>=&gt; <span class="prelude-val">Ok</span>(SpirvMetadata::NameVariables),
+            <span class="string">&quot;full&quot; </span>=&gt; <span class="prelude-val">Ok</span>(SpirvMetadata::Full),
+            <span class="kw">_ </span>=&gt; <span class="prelude-val">Err</span>(clap::Error::new(ErrorKind::InvalidValue)),
+        }
+    }
+
+    <span class="doccomment">/// Clap value parser for `Capability`.
+    </span><span class="kw">fn </span>spirv_capability(s: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;Capability, clap::Error&gt; {
+        <span class="kw">match </span>Capability::from_str(s) {
+            <span class="prelude-val">Ok</span>(capability) =&gt; <span class="prelude-val">Ok</span>(capability),
+            <span class="prelude-val">Err</span>(<span class="kw">_</span>) =&gt; <span class="prelude-val">Err</span>(clap::Error::new(ErrorKind::InvalidValue)),
+        }
+    }
+
     <span class="doccomment">/// Builds a shader with the provided set of options.
     </span><span class="kw">pub fn </span>build_shader(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;CompileResult, SpirvBuilderError&gt; {
         <span class="kw">let </span><span class="kw-2">mut </span>builder = SpirvBuilder::new(<span class="kw-2">&amp;</span><span class="self">self</span>.path_to_crate, <span class="kw-2">&amp;</span><span class="self">self</span>.target)
@@ -439,10 +383,73 @@
     }
 }
 
+<span class="kw">enum </span>Msg {
+    Change,
+    Build(<span class="prelude-ty">Result</span>&lt;CompileResult, SpirvBuilderError&gt;),
+}
+
+<span class="doccomment">/// Instantiate an async watcher and return it alongside a channel to receive events on.
+</span><span class="kw">fn </span>async_watcher() -&gt; notify::Result&lt;(RecommendedWatcher, Receiver&lt;notify::Result&lt;Event&gt;&gt;)&gt; {
+    <span class="kw">let </span>(tx, rx) = unbounded();
+
+    <span class="comment">// Automatically select the best implementation for your platform.
+    // You can also access each implementation directly e.g. INotifyWatcher.
+    </span><span class="kw">let </span>watcher = RecommendedWatcher::new(
+        <span class="kw">move </span>|res| {
+            future::block_on(<span class="kw">async </span>{
+                tx.send(res).<span class="kw">await</span>.unwrap();
+            })
+        },
+        Default::default(),
+    )<span class="question-mark">?</span>;
+
+    <span class="prelude-val">Ok</span>((watcher, rx))
+}
+
+<span class="doccomment">/// Watch a file or directory, sending relevant events through the provided channel.
+</span><span class="kw">async fn </span>async_watch&lt;P: AsRef&lt;Path&gt;&gt;(
+    path: P,
+    change_tx: Sender&lt;Msg&gt;,
+) -&gt; <span class="prelude-ty">Result</span>&lt;(), Box&lt;<span class="kw">dyn </span>Error&gt;&gt; {
+    <span class="kw">let </span>path = path.as_ref();
+    <span class="kw">let </span>path = std::fs::canonicalize(path)
+        .unwrap_or_else(|e| <span class="macro">panic!</span>(<span class="string">&quot;Failed to canonicalize path {path:?}: {e:}&quot;</span>));
+
+    <span class="kw">let </span>(<span class="kw-2">mut </span>watcher, rx) = async_watcher()<span class="question-mark">?</span>;
+
+    <span class="comment">// Add a path to be watched. All files and directories at that path and
+    // below will be monitored for changes.
+    </span><span class="kw">let </span>watch_path = <span class="kw">if </span>path.is_dir() {
+        path.clone()
+    } <span class="kw">else </span>{
+        path.parent().unwrap().to_owned()
+    };
+    watcher.watch(watch_path.as_ref(), RecursiveMode::Recursive)<span class="question-mark">?</span>;
+
+    <span class="kw">while let </span><span class="prelude-val">Ok</span>(res) = rx.recv().<span class="kw">await </span>{
+        <span class="kw">match </span>res {
+            <span class="prelude-val">Ok</span>(event) =&gt; {
+                <span class="kw">if </span>path.is_dir()
+                    || event
+                        .paths
+                        .iter()
+                        .find(|candidate| <span class="kw-2">**</span>candidate == path)
+                        .is_some()
+                {
+                    change_tx.send(Msg::Change).<span class="kw">await</span>.unwrap();
+                }
+            }
+            <span class="prelude-val">Err</span>(e) =&gt; <span class="macro">error!</span>(<span class="string">&quot;Watch error: {:?}&quot;</span>, e),
+        }
+    }
+
+    <span class="prelude-val">Ok</span>(())
+}
+
 <span class="kw">fn </span>main() {
     tracing_subscriber::fmt().init();
 
-    <span class="kw">let </span>args = ShaderBuilder::parse();
+    <span class="kw">let </span><span class="kw-2">mut </span>args = ShaderBuilder::parse();
 
     <span class="macro">println!</span>();
     <span class="macro">info!</span>(<span class="string">&quot;Shader Builder&quot;</span>);
@@ -456,67 +463,64 @@
     }
     <span class="macro">println!</span>();
 
-    <span class="kw">if </span>args.watch_paths.is_none() {
-        <span class="kw">return</span>;
-    };
+    <span class="kw">let </span><span class="prelude-val">Some</span>(watch_paths) = args.watch_paths.take() <span class="kw">else </span>{
+        <span class="kw">return
+    </span>};
 
-    <span class="kw">let </span>pool = ThreadPool::new().expect(<span class="string">&quot;Failed to build pool&quot;</span>);
-    <span class="kw">let </span>(change_tx, <span class="kw-2">mut </span>change_rx) = mpsc::unbounded::&lt;()&gt;();
-    <span class="kw">let </span>(build_tx, <span class="kw-2">mut </span>build_rx) = mpsc::unbounded::&lt;bool&gt;();
+    <span class="kw">let </span>ex = Executor::new();
+    <span class="kw">let </span>(change_tx, change_rx) = unbounded::&lt;Msg&gt;();
+    <span class="kw">let </span>(build_tx, build_rx) = unbounded::&lt;Msg&gt;();
 
-    <span class="kw">let </span><span class="kw-2">mut </span>building = <span class="bool-val">false</span>;
-
-    <span class="kw">let </span>fut_values = <span class="kw">async move </span>{
-        <span class="kw">let </span><span class="kw-2">mut </span>args = args;
-
-        <span class="kw">let </span><span class="prelude-val">Some</span>(watch_paths) = args.watch_paths.take() <span class="kw">else </span>{
-            <span class="macro">unreachable!</span>();
-        };
-
-        <span class="macro">println!</span>();
-        {
-            <span class="kw">for </span>path <span class="kw">in </span>watch_paths {
-                <span class="macro">info!</span>(<span class="string">&quot;Watching {path:} for changes...&quot;</span>);
-                <span class="kw">let </span>change_tx = change_tx.clone();
-                pool.spawn_ok(<span class="kw">async move </span>{
-                    async_watch(path, change_tx).<span class="kw">await</span>.unwrap();
-                });
-            }
-        }
-
-        <span class="kw">loop </span>{
-            <span class="kw">let </span><span class="kw-2">mut </span>file_change = change_rx.next();
-            <span class="kw">let </span><span class="kw-2">mut </span>build_complete = build_rx.next();
-            <span class="macro">select! </span>{
-                <span class="kw">_ </span>= file_change =&gt; {
-                    <span class="kw">if </span>!building {
-                        building = <span class="bool-val">true</span>;
-                        <span class="macro">info!</span>(<span class="string">&quot;Building shader...&quot;</span>);
-                        pool.spawn_ok({
-                            <span class="kw">let </span><span class="kw-2">mut </span>build_tx = build_tx.clone();
-                            <span class="kw">let </span>args = args.clone();
-                            <span class="kw">async move </span>{
-                                build_tx.send(args.build_shader().is_ok()).<span class="kw">await</span>.unwrap();
-                            }
-                        })
+    Parallel::new()
+        .each(watch_paths, |path| {
+            <span class="macro">info!</span>(<span class="string">&quot;Watching {path:} for changes...&quot;</span>);
+            ex.spawn(<span class="kw">async </span>{
+                async_watch(path, change_tx).<span class="kw">await</span>.unwrap();
+            })
+            .detach();
+        })
+        .add(|| {
+            <span class="kw">let </span><span class="kw-2">mut </span>building = <span class="bool-val">false</span>;
+            <span class="kw">loop </span>{
+                <span class="kw">match </span>future::block_on(futures_lite::future::race(
+                    change_rx.recv(),
+                    build_rx.recv(),
+                )) {
+                    <span class="prelude-val">Ok</span>(Msg::Change) =&gt; {
+                        <span class="kw">if </span>!building {
+                            building = <span class="bool-val">true</span>;
+                            <span class="macro">info!</span>(<span class="string">&quot;Building shader...&quot;</span>);
+                            ex.spawn({
+                                <span class="kw">let </span>build_tx = build_tx.clone();
+                                <span class="kw">let </span>args = args.clone();
+                                <span class="kw">async move </span>{
+                                    build_tx
+                                        .send(Msg::Build(args.build_shader()))
+                                        .<span class="kw">await
+                                        </span>.unwrap();
+                                }
+                            })
+                            .detach();
+                        }
                     }
-                },
-                result = build_complete =&gt; {
-                    <span class="kw">let </span>result = result.unwrap();
-                    <span class="kw">if </span>result {
-                        <span class="macro">info!</span>(<span class="string">&quot;Build complete!&quot;</span>);
+                    <span class="prelude-val">Ok</span>(Msg::Build(result)) =&gt; {
+                        <span class="kw">if </span>result.is_ok() {
+                            <span class="macro">info!</span>(<span class="string">&quot;Build complete!&quot;</span>);
+                        } <span class="kw">else </span>{
+                            <span class="macro">error!</span>(<span class="string">&quot;Build failed!&quot;</span>);
+                        }
+                        <span class="macro">println!</span>();
+                        building = <span class="bool-val">false</span>;
                     }
-                    <span class="kw">else </span>{
-                        <span class="macro">error!</span>(<span class="string">&quot;Build failed!&quot;</span>);
+                    <span class="prelude-val">Err</span>(e) =&gt; {
+                        <span class="macro">panic!</span>(<span class="string">&quot;{e:}&quot;</span>)
                     }
-                    <span class="macro">println!</span>();
-                    building = <span class="bool-val">false</span>;
                 }
-            };
-        }
-    };
-
-    executor::block_on(fut_values);
+            }
+        })
+        .finish(|| <span class="kw">loop </span>{
+            future::block_on(ex.tick())
+        });
 }
 </code></pre></div>
 </section></main><div id="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="rust_gpu_builder" data-themes="" data-resource-suffix="" data-rustdoc-version="1.68.0-nightly (5ce39f42b 2023-01-20)" data-search-js="search-98d53477a794af0b.js" data-settings-js="settings-c3c521c753752a1a.js" data-settings-css="settings-ab1d4ae2ec52020e.css" ></div></body></html>

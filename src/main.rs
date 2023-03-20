@@ -1,6 +1,7 @@
 use std::{
     error::Error,
     path::{Path, PathBuf},
+    str::FromStr,
 };
 
 use clap::{error::ErrorKind, Parser};
@@ -14,7 +15,7 @@ use futures::{
 use notify::{Event, RecommendedWatcher, RecursiveMode, Watcher};
 
 use spirv_builder::{
-    CompileResult, MetadataPrintout, SpirvBuilder, SpirvBuilderError, SpirvMetadata,
+    Capability, CompileResult, MetadataPrintout, SpirvBuilder, SpirvBuilderError, SpirvMetadata,
 };
 
 use tracing::{error, info};
@@ -87,6 +88,13 @@ fn spirv_metadata(s: &str) -> Result<SpirvMetadata, clap::Error> {
     }
 }
 
+fn spirv_capability(s: &str) -> Result<Capability, clap::Error> {
+    match Capability::from_str(s) {
+        Ok(capability) => Ok(capability),
+        Err(_) => Err(clap::Error::new(ErrorKind::InvalidValue)),
+    }
+}
+
 /// Clap application struct.
 #[derive(Debug, Clone, Parser)]
 #[command(author, version, about, long_about = None)]
@@ -102,6 +110,9 @@ struct ShaderBuilder {
     /// Compile shaders in release mode.
     #[arg(long, default_value = "true")]
     release: bool,
+    /// Enables the provided SPIR-V capability.
+    #[arg(long, value_parser=spirv_capability)]
+    capability: Vec<Capability>,
     /// Compile one .spv file per entry point.
     #[arg(long, default_value = "false")]
     multimodule: bool,
@@ -146,7 +157,7 @@ struct ShaderBuilder {
 impl ShaderBuilder {
     /// Builds a shader with the provided set of options.
     pub fn build_shader(&self) -> Result<CompileResult, SpirvBuilderError> {
-        SpirvBuilder::new(&self.path_to_crate, &self.target)
+        let mut builder = SpirvBuilder::new(&self.path_to_crate, &self.target)
             .deny_warnings(self.deny_warnings)
             .release(self.release)
             .multimodule(self.multimodule)
@@ -158,8 +169,13 @@ impl ShaderBuilder {
             .scalar_block_layout(self.scalar_block_layout)
             .skip_block_layout(self.skip_block_layout)
             .preserve_bindings(self.preserve_bindings)
-            .print_metadata(MetadataPrintout::None)
-            .build()
+            .print_metadata(MetadataPrintout::None);
+
+        for capability in &self.capability {
+            builder = builder.capability(*capability);
+        }
+
+        builder.build()
     }
 }
 

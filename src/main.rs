@@ -104,6 +104,11 @@ impl ShaderBuilder {
 
     /// Builds a shader with the provided set of options.
     pub fn build_shader(&self) -> Result<CompileResult, SpirvBuilderError> {
+        // As per `spirv-builder`, apply env vars set in build.rs
+        // to work around potentially suboptimal cargo behaviour
+        std::env::set_var("OUT_DIR", env!("OUT_DIR"));
+        std::env::set_var("PROFILE", env!("PROFILE"));
+
         let mut builder = SpirvBuilder::new(&self.path_to_crate, &self.target)
             .deny_warnings(self.deny_warnings)
             .release(self.release)

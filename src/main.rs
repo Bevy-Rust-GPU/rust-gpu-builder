@@ -6,11 +6,10 @@ use std::{
 
 use clap::{error::ErrorKind, Parser};
 
-use futures::{
-    channel::mpsc::{self, channel, Receiver, UnboundedSender},
-    executor::{self, ThreadPool},
-    select, SinkExt, StreamExt,
-};
+use async_channel::{unbounded, Receiver, Sender};
+use async_executor::Executor;
+use easy_parallel::Parallel;
+use futures_lite::future;
 
 use notify::{Event, RecommendedWatcher, RecursiveMode, Watcher};
 
@@ -19,81 +18,6 @@ use spirv_builder::{
 };
 
 use tracing::{error, info};
-
-/// Instantiate an async watcher and return it alongside a channel to receive events on.
-fn async_watcher() -> notify::Result<(RecommendedWatcher, Receiver<notify::Result<Event>>)> {
-    let (mut tx, rx) = channel(1);
-
-    // Automatically select the best implementation for your platform.
-    // You can also access each implementation directly e.g. INotifyWatcher.
-    let watcher = RecommendedWatcher::new(
-        move |res| {
-            futures::executor::block_on(async {
-                tx.send(res).await.unwrap();
-            })
-        },
-        Default::default(),
-    )?;
-
-    Ok((watcher, rx))
-}
-
-/// Watch a file or directory, sending relevant events through the provided channel.
-async fn async_watch<P: AsRef<Path>>(
-    path: P,
-    mut change_tx: UnboundedSender<()>,
-) -> Result<(), Box<dyn Error>> {
-    let path = path.as_ref();
-    let path = std::fs::canonicalize(path)
-        .unwrap_or_else(|e| panic!("Failed to canonicalize path {path:?}: {e:}"));
-
-    let (mut watcher, mut rx) = async_watcher()?;
-
-    // Add a path to be watched. All files and directories at that path and
-    // below will be monitored for changes.
-    let watch_path = if path.is_dir() {
-        path.clone()
-    } else {
-        path.parent().unwrap().to_owned()
-    };
-    watcher.watch(watch_path.as_ref(), RecursiveMode::Recursive)?;
-
-    while let Some(res) = rx.next().await {
-        match res {
-            Ok(event) => {
-                if path.is_dir()
-                    || event
-                        .paths
-                        .iter()
-                        .find(|candidate| **candidate == path)
-                        .is_some()
-                {
-                    change_tx.send(()).await.unwrap();
-                }
-            }
-            Err(e) => error!("Watch error: {:?}", e),
-        }
-    }
-
-    Ok(())
-}
-
-/// Clap value parser for `SpirvMetadata`.
-fn spirv_metadata(s: &str) -> Result<SpirvMetadata, clap::Error> {
-    match s {
-        "none" => Ok(SpirvMetadata::None),
-        "name-variables" => Ok(SpirvMetadata::NameVariables),
-        "full" => Ok(SpirvMetadata::Full),
-        _ => Err(clap::Error::new(ErrorKind::InvalidValue)),
-    }
-}
-
-fn spirv_capability(s: &str) -> Result<Capability, clap::Error> {
-    match Capability::from_str(s) {
-        Ok(capability) => Ok(capability),
-        Err(_) => Err(clap::Error::new(ErrorKind::InvalidValue)),
-    }
-}
 
 /// Clap application struct.
 #[derive(Debug, Clone, Parser)]
@@ -111,13 +35,13 @@ struct ShaderBuilder {
     #[arg(long, default_value = "true")]
     release: bool,
     /// Enables the provided SPIR-V capability.
-    #[arg(long, value_parser=spirv_capability)]
+    #[arg(long, value_parser=Self::spirv_capability)]
     capability: Vec<Capability>,
     /// Compile one .spv file per entry point.
     #[arg(long, default_value = "false")]
     multimodule: bool,
     /// Set the level of metadata included in the SPIR-V binary.
-    #[arg(long, value_parser=spirv_metadata, default_value = "none")]
+    #[arg(long, value_parser=Self::spirv_metadata, default_value = "none")]
     spirv_metadata: SpirvMetadata,
     /// Allow store from one struct type to a different type with compatible layout and members.
     #[arg(long, default_value = "false")]
@@ -155,6 +79,24 @@ struct ShaderBuilder {
 }
 
 impl ShaderBuilder {
+    /// Clap value parser for `SpirvMetadata`.
+    fn spirv_metadata(s: &str) -> Result<SpirvMetadata, clap::Error> {
+        match s {
+            "none" => Ok(SpirvMetadata::None),
+            "name-variables" => Ok(SpirvMetadata::NameVariables),
+            "full" => Ok(SpirvMetadata::Full),
+            _ => Err(clap::Error::new(ErrorKind::InvalidValue)),
+        }
+    }
+
+    /// Clap value parser for `Capability`.
+    fn spirv_capability(s: &str) -> Result<Capability, clap::Error> {
+        match Capability::from_str(s) {
+            Ok(capability) => Ok(capability),
+            Err(_) => Err(clap::Error::new(ErrorKind::InvalidValue)),
+        }
+    }
+
     /// Builds a shader with the provided set of options.
     pub fn build_shader(&self) -> Result<CompileResult, SpirvBuilderError> {
         let mut builder = SpirvBuilder::new(&self.path_to_crate, &self.target)
@@ -179,10 +121,73 @@ impl ShaderBuilder {
     }
 }
 
+enum Msg {
+    Change,
+    Build(Result<CompileResult, SpirvBuilderError>),
+}
+
+/// Instantiate an async watcher and return it alongside a channel to receive events on.
+fn async_watcher() -> notify::Result<(RecommendedWatcher, Receiver<notify::Result<Event>>)> {
+    let (tx, rx) = unbounded();
+
+    // Automatically select the best implementation for your platform.
+    // You can also access each implementation directly e.g. INotifyWatcher.
+    let watcher = RecommendedWatcher::new(
+        move |res| {
+            future::block_on(async {
+                tx.send(res).await.unwrap();
+            })
+        },
+        Default::default(),
+    )?;
+
+    Ok((watcher, rx))
+}
+
+/// Watch a file or directory, sending relevant events through the provided channel.
+async fn async_watch<P: AsRef<Path>>(
+    path: P,
+    change_tx: Sender<Msg>,
+) -> Result<(), Box<dyn Error>> {
+    let path = path.as_ref();
+    let path = std::fs::canonicalize(path)
+        .unwrap_or_else(|e| panic!("Failed to canonicalize path {path:?}: {e:}"));
+
+    let (mut watcher, rx) = async_watcher()?;
+
+    // Add a path to be watched. All files and directories at that path and
+    // below will be monitored for changes.
+    let watch_path = if path.is_dir() {
+        path.clone()
+    } else {
+        path.parent().unwrap().to_owned()
+    };
+    watcher.watch(watch_path.as_ref(), RecursiveMode::Recursive)?;
+
+    while let Ok(res) = rx.recv().await {
+        match res {
+            Ok(event) => {
+                if path.is_dir()
+                    || event
+                        .paths
+                        .iter()
+                        .find(|candidate| **candidate == path)
+                        .is_some()
+                {
+                    change_tx.send(Msg::Change).await.unwrap();
+                }
+            }
+            Err(e) => error!("Watch error: {:?}", e),
+        }
+    }
+
+    Ok(())
+}
+
 fn main() {
     tracing_subscriber::fmt().init();
 
-    let args = ShaderBuilder::parse();
+    let mut args = ShaderBuilder::parse();
 
     println!();
     info!("Shader Builder");
@@ -196,65 +201,62 @@ fn main() {
     }
     println!();
 
-    if args.watch_paths.is_none() {
-        return;
+    let Some(watch_paths) = args.watch_paths.take() else {
+        return
     };
 
-    let pool = ThreadPool::new().expect("Failed to build pool");
-    let (change_tx, mut change_rx) = mpsc::unbounded::<()>();
-    let (build_tx, mut build_rx) = mpsc::unbounded::<bool>();
+    let ex = Executor::new();
+    let (change_tx, change_rx) = unbounded::<Msg>();
+    let (build_tx, build_rx) = unbounded::<Msg>();
 
-    let mut building = false;
-
-    let fut_values = async move {
-        let mut args = args;
-
-        let Some(watch_paths) = args.watch_paths.take() else {
-            unreachable!();
-        };
-
-        println!();
-        {
-            for path in watch_paths {
-                info!("Watching {path:} for changes...");
-                let change_tx = change_tx.clone();
-                pool.spawn_ok(async move {
-                    async_watch(path, change_tx).await.unwrap();
-                });
-            }
-        }
-
-        loop {
-            let mut file_change = change_rx.next();
-            let mut build_complete = build_rx.next();
-            select! {
-                _ = file_change => {
-                    if !building {
-                        building = true;
-                        info!("Building shader...");
-                        pool.spawn_ok({
-                            let mut build_tx = build_tx.clone();
-                            let args = args.clone();
-                            async move {
-                                build_tx.send(args.build_shader().is_ok()).await.unwrap();
-                            }
-                        })
+    Parallel::new()
+        .each(watch_paths, |path| {
+            info!("Watching {path:} for changes...");
+            ex.spawn(async {
+                async_watch(path, change_tx).await.unwrap();
+            })
+            .detach();
+        })
+        .add(|| {
+            let mut building = false;
+            loop {
+                match future::block_on(futures_lite::future::race(
+                    change_rx.recv(),
+                    build_rx.recv(),
+                )) {
+                    Ok(Msg::Change) => {
+                        if !building {
+                            building = true;
+                            info!("Building shader...");
+                            ex.spawn({
+                                let build_tx = build_tx.clone();
+                                let args = args.clone();
+                                async move {
+                                    build_tx
+                                        .send(Msg::Build(args.build_shader()))
+                                        .await
+                                        .unwrap();
+                                }
+                            })
+                            .detach();
+                        }
                     }
-                },
-                result = build_complete => {
-                    let result = result.unwrap();
-                    if result {
-                        info!("Build complete!");
+                    Ok(Msg::Build(result)) => {
+                        if result.is_ok() {
+                            info!("Build complete!");
+                        } else {
+                            error!("Build failed!");
+                        }
+                        println!();
+                        building = false;
                     }
-                    else {
-                        error!("Build failed!");
+                    Err(e) => {
+                        panic!("{e:}")
                     }
-                    println!();
-                    building = false;
                 }
-            };
-        }
-    };
-
-    executor::block_on(fut_values);
+            }
+        })
+        .finish(|| loop {
+            future::block_on(ex.tick())
+        });
 }

@@ -320,13 +320,16 @@ fn main() {
     let (build_tx, build_rx) = unbounded::<Msg>();
 
     Parallel::new()
+        // Spawn file watchers
         .each(watch_paths, |path| {
             info!("Watching {path:} for changes...");
-            ex.spawn(async {
-                async_watch(path, change_tx).await.unwrap();
-            })
-            .detach();
+            future::block_on(async {
+                async_watch(path, change_tx)
+                    .await
+                    .expect("Async watcher error");
+            });
         })
+        // Spawn message Bus
         .add(|| {
             let mut building = false;
             loop {
@@ -334,6 +337,7 @@ fn main() {
                     change_rx.recv(),
                     build_rx.recv(),
                 )) {
+                    // On file change, spawn a build task
                     Ok(Msg::Change) => {
                         if !building {
                             building = true;
@@ -353,6 +357,7 @@ fn main() {
                             .detach();
                         }
                     }
+                    // On build complete, spawn a handle_compile_result task
                     Ok(Msg::Build(result)) => {
                         if let Ok(result) = result {
                             let output_path = args.output_path.clone();
@@ -371,6 +376,7 @@ fn main() {
                 }
             }
         })
+        // Run executor on main thread
         .finish(|| loop {
             future::block_on(ex.tick())
         });

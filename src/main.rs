@@ -22,6 +22,24 @@ use spirv_builder::{
 
 use tracing::{error, info};
 
+#[derive(Debug, Copy, Clone)]
+pub enum OutputFormat {
+    Json,
+    Messagepack,
+}
+
+impl FromStr for OutputFormat {
+    type Err = &'static str;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "Json" => Ok(Self::Json),
+            "Messagepack" => Ok(Self::Messagepack),
+            _ => Err("Unrecognized output mode"),
+        }
+    }
+}
+
 /// Clap application struct.
 #[derive(Debug, Clone, Parser)]
 #[command(author, version, about, long_about = None)]
@@ -30,6 +48,9 @@ struct ShaderBuilder {
     path_to_crate: PathBuf,
     /// If set, combined SPIR-V and entrypoint metadata will be written to this file on succesful compile.
     output_path: Option<PathBuf>,
+    /// The format to write output in.
+    #[arg(long, default_value = "Messagepack")]
+    output_format: OutputFormat,
     /// rust-gpu compile target.
     #[arg(short, long, default_value = "spirv-unknown-vulkan1.2")]
     target: String,
@@ -194,7 +215,11 @@ async fn async_watch<P: AsRef<Path>>(
     Ok(())
 }
 
-async fn handle_compile_result(result: CompileResult, output_path: Option<PathBuf>) {
+async fn handle_compile_result(
+    result: CompileResult,
+    output_path: Option<PathBuf>,
+    output_format: OutputFormat,
+) {
     info!("Entry Points:");
     for entry in &result.entry_points {
         println!("{entry:}");
@@ -246,10 +271,20 @@ async fn handle_compile_result(result: CompileResult, output_path: Option<PathBu
         modules,
     };
 
-    let out = serde_json::to_string_pretty(&out).expect("Failed to serialize output");
-    async_fs::write(&output_path, out)
-        .await
-        .expect("Failed to write output");
+    match output_format {
+        OutputFormat::Json => {
+            let out = serde_json::to_string_pretty(&out).expect("Failed to serialize output");
+            async_fs::write(&output_path, out)
+                .await
+                .expect("Failed to write output");
+        }
+        OutputFormat::Messagepack => {
+            let out = rmp_serde::to_vec_named(&out).expect("Failed to serialize output");
+            async_fs::write(&output_path, out)
+                .await
+                .expect("Failed to write output");
+        }
+    }
     println!();
     info!("Wrote output to {output_path:?}");
 }
@@ -266,7 +301,11 @@ fn main() {
     info!("Building shader...");
     println!();
     if let Ok(result) = args.build_shader() {
-        future::block_on(handle_compile_result(result, args.output_path.clone()));
+        future::block_on(handle_compile_result(
+            result,
+            args.output_path.clone(),
+            args.output_format,
+        ));
     } else {
         error!("Build failed!");
     }
@@ -317,7 +356,8 @@ fn main() {
                     Ok(Msg::Build(result)) => {
                         if let Ok(result) = result {
                             let output_path = args.output_path.clone();
-                            ex.spawn(handle_compile_result(result, output_path))
+                            let output_format = args.output_format;
+                            ex.spawn(handle_compile_result(result, output_path, output_format))
                                 .detach();
                         } else {
                             error!("Build failed!");

@@ -10,7 +10,7 @@ rust-gpu-builder-shared = { path = "../rust-gpu-builder-shared" }
 [dependencies]
 rust-gpu-builder-shared = "0.1.0"
 
-spirv-builder = "0.6.0"
+spirv-builder = "0.7.0"
 notify = "5.1.0"
 serde_json = "1.0.94"
 rmp-serde = "1.1.1"

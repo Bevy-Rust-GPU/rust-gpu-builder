@@ -1,3 +1,0 @@
-(function() {var implementors = {
-"rust_gpu_builder":[["impl <a class=\"trait\" href=\"https://doc.rust-lang.org/nightly/core/marker/trait.Copy.html\" title=\"trait core::marker::Copy\">Copy</a> for <a class=\"enum\" href=\"rust_gpu_builder/enum.OutputFormat.html\" title=\"enum rust_gpu_builder::OutputFormat\">OutputFormat</a>"]]
-};if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

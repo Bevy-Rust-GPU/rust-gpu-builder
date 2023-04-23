@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/main.rs`."><title>main.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Bold-a2c9cd1067f8b328.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-c4dbdcde0fbd8430.css" id="mainThemeStyle"><link rel="stylesheet" id="themeStyle" href="../../static.files/light-db279b6232be9c13.css"><link rel="stylesheet" disabled href="../../static.files/dark-cf923f49f397b216.css"><link rel="stylesheet" disabled href="../../static.files/ayu-be46fdc453a55015.css"><script src="../../static.files/storage-3891ce972e3a2bf8.js"></script><script defer src="../../static.files/source-script-1b95b7cca98b26e5.js"></script><script defer src="../../source-files.js"></script><script defer src="../../static.files/main-98a684e84ae5b08b.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-13285aec31fa243e.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><nav class="sub"><a class="sub-logo-container" href="../../rust_gpu_builder/index.html"><img class="rust-logo" src="../../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/main.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>main.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Regular-1f7d512b176f0f72.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Bold-124a1ca42af929b6.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-52c5db6f6f352e54.css" id="mainThemeStyle"><link rel="stylesheet" id="themeStyle" href="../../static.files/light-4743e13df3dfe8c4.css"><link rel="stylesheet" disabled href="../../static.files/dark-0e1b889528bd466b.css"><link rel="stylesheet" disabled href="../../static.files/ayu-65289d5d067c7c66.css"><script id="default-settings" ></script><script src="../../static.files/storage-d43fa987303ecbbb.js"></script><script defer src="../../static.files/source-script-ea63cb6500f71309.js"></script><script defer src="../../source-files.js"></script><script defer src="../../static.files/main-3367e395607fafc1.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-13285aec31fa243e.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><nav class="sub"><a class="sub-logo-container" href="../../rust_gpu_builder/index.html"><img class="rust-logo" src="../../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../static.files/wheel-5ec35bf9ca753509.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
 <a href="#4" id="4">4</a>
@@ -242,184 +242,92 @@
 <a href="#242" id="242">242</a>
 <a href="#243" id="243">243</a>
 <a href="#244" id="244">244</a>
-<a href="#245" id="245">245</a>
-<a href="#246" id="246">246</a>
-<a href="#247" id="247">247</a>
-<a href="#248" id="248">248</a>
-<a href="#249" id="249">249</a>
-<a href="#250" id="250">250</a>
-<a href="#251" id="251">251</a>
-<a href="#252" id="252">252</a>
-<a href="#253" id="253">253</a>
-<a href="#254" id="254">254</a>
-<a href="#255" id="255">255</a>
-<a href="#256" id="256">256</a>
-<a href="#257" id="257">257</a>
-<a href="#258" id="258">258</a>
-<a href="#259" id="259">259</a>
-<a href="#260" id="260">260</a>
-<a href="#261" id="261">261</a>
-<a href="#262" id="262">262</a>
-<a href="#263" id="263">263</a>
-<a href="#264" id="264">264</a>
-<a href="#265" id="265">265</a>
-<a href="#266" id="266">266</a>
-<a href="#267" id="267">267</a>
-<a href="#268" id="268">268</a>
-<a href="#269" id="269">269</a>
-<a href="#270" id="270">270</a>
-<a href="#271" id="271">271</a>
-<a href="#272" id="272">272</a>
-<a href="#273" id="273">273</a>
-<a href="#274" id="274">274</a>
-<a href="#275" id="275">275</a>
-<a href="#276" id="276">276</a>
-<a href="#277" id="277">277</a>
-<a href="#278" id="278">278</a>
-<a href="#279" id="279">279</a>
-<a href="#280" id="280">280</a>
-<a href="#281" id="281">281</a>
-<a href="#282" id="282">282</a>
-<a href="#283" id="283">283</a>
-<a href="#284" id="284">284</a>
-<a href="#285" id="285">285</a>
-<a href="#286" id="286">286</a>
-<a href="#287" id="287">287</a>
-<a href="#288" id="288">288</a>
-<a href="#289" id="289">289</a>
-<a href="#290" id="290">290</a>
-<a href="#291" id="291">291</a>
-<a href="#292" id="292">292</a>
-<a href="#293" id="293">293</a>
-<a href="#294" id="294">294</a>
-<a href="#295" id="295">295</a>
-<a href="#296" id="296">296</a>
-<a href="#297" id="297">297</a>
-<a href="#298" id="298">298</a>
-<a href="#299" id="299">299</a>
-<a href="#300" id="300">300</a>
-<a href="#301" id="301">301</a>
-<a href="#302" id="302">302</a>
-<a href="#303" id="303">303</a>
-<a href="#304" id="304">304</a>
-<a href="#305" id="305">305</a>
-<a href="#306" id="306">306</a>
-<a href="#307" id="307">307</a>
-<a href="#308" id="308">308</a>
-<a href="#309" id="309">309</a>
-<a href="#310" id="310">310</a>
-<a href="#311" id="311">311</a>
-<a href="#312" id="312">312</a>
-<a href="#313" id="313">313</a>
-<a href="#314" id="314">314</a>
-<a href="#315" id="315">315</a>
-<a href="#316" id="316">316</a>
-<a href="#317" id="317">317</a>
-<a href="#318" id="318">318</a>
-<a href="#319" id="319">319</a>
-<a href="#320" id="320">320</a>
-<a href="#321" id="321">321</a>
-<a href="#322" id="322">322</a>
-<a href="#323" id="323">323</a>
-<a href="#324" id="324">324</a>
-<a href="#325" id="325">325</a>
-<a href="#326" id="326">326</a>
-<a href="#327" id="327">327</a>
-<a href="#328" id="328">328</a>
-<a href="#329" id="329">329</a>
-<a href="#330" id="330">330</a>
-<a href="#331" id="331">331</a>
-<a href="#332" id="332">332</a>
-<a href="#333" id="333">333</a>
-<a href="#334" id="334">334</a>
-<a href="#335" id="335">335</a>
-<a href="#336" id="336">336</a>
-<a href="#337" id="337">337</a>
-<a href="#338" id="338">338</a>
-<a href="#339" id="339">339</a>
-<a href="#340" id="340">340</a>
-<a href="#341" id="341">341</a>
-<a href="#342" id="342">342</a>
-<a href="#343" id="343">343</a>
-<a href="#344" id="344">344</a>
-<a href="#345" id="345">345</a>
-<a href="#346" id="346">346</a>
-<a href="#347" id="347">347</a>
-<a href="#348" id="348">348</a>
-<a href="#349" id="349">349</a>
-<a href="#350" id="350">350</a>
-<a href="#351" id="351">351</a>
-<a href="#352" id="352">352</a>
-<a href="#353" id="353">353</a>
-<a href="#354" id="354">354</a>
-<a href="#355" id="355">355</a>
-<a href="#356" id="356">356</a>
-<a href="#357" id="357">357</a>
-<a href="#358" id="358">358</a>
-<a href="#359" id="359">359</a>
-<a href="#360" id="360">360</a>
-<a href="#361" id="361">361</a>
-<a href="#362" id="362">362</a>
-<a href="#363" id="363">363</a>
-<a href="#364" id="364">364</a>
-<a href="#365" id="365">365</a>
-<a href="#366" id="366">366</a>
-<a href="#367" id="367">367</a>
-<a href="#368" id="368">368</a>
-<a href="#369" id="369">369</a>
-<a href="#370" id="370">370</a>
-<a href="#371" id="371">371</a>
-<a href="#372" id="372">372</a>
-<a href="#373" id="373">373</a>
-<a href="#374" id="374">374</a>
-<a href="#375" id="375">375</a>
-<a href="#376" id="376">376</a>
-<a href="#377" id="377">377</a>
-<a href="#378" id="378">378</a>
-<a href="#379" id="379">379</a>
-<a href="#380" id="380">380</a>
-<a href="#381" id="381">381</a>
-<a href="#382" id="382">382</a>
-<a href="#383" id="383">383</a>
 </pre><pre class="rust"><code><span class="kw">use </span>std::{
-    collections::BTreeMap,
     error::Error,
     path::{Path, PathBuf},
-    str::FromStr,
 };
-
-<span class="kw">use </span>rust_gpu_builder_shared::{RustGpuBuilderModules, RustGpuBuilderOutput};
 
 <span class="kw">use </span>clap::{error::ErrorKind, Parser};
 
-<span class="kw">use </span>async_channel::{unbounded, Receiver, Sender};
-<span class="kw">use </span>async_executor::Executor;
-<span class="kw">use </span>easy_parallel::Parallel;
-<span class="kw">use </span>futures_lite::future;
+<span class="kw">use </span>futures::{
+    channel::mpsc::{<span class="self">self</span>, channel, Receiver, UnboundedSender},
+    executor::{<span class="self">self</span>, ThreadPool},
+    select, SinkExt, StreamExt,
+};
 
 <span class="kw">use </span>notify::{Event, RecommendedWatcher, RecursiveMode, Watcher};
 
 <span class="kw">use </span>spirv_builder::{
-    Capability, CompileResult, MetadataPrintout, SpirvBuilder, SpirvBuilderError, SpirvMetadata,
+    CompileResult, MetadataPrintout, SpirvBuilder, SpirvBuilderError, SpirvMetadata,
 };
 
 <span class="kw">use </span>tracing::{error, info};
 
-<span class="attr">#[derive(Debug, Copy, Clone)]
-</span><span class="kw">pub enum </span>OutputFormat {
-    Json,
-    Messagepack,
+<span class="doccomment">/// Instantiate an async watcher and return it alongside a channel to receive events on.
+</span><span class="kw">fn </span>async_watcher() -&gt; notify::Result&lt;(RecommendedWatcher, Receiver&lt;notify::Result&lt;Event&gt;&gt;)&gt; {
+    <span class="kw">let </span>(<span class="kw-2">mut </span>tx, rx) = channel(<span class="number">1</span>);
+
+    <span class="comment">// Automatically select the best implementation for your platform.
+    // You can also access each implementation directly e.g. INotifyWatcher.
+    </span><span class="kw">let </span>watcher = RecommendedWatcher::new(
+        <span class="kw">move </span>|res| {
+            futures::executor::block_on(<span class="kw">async </span>{
+                tx.send(res).<span class="kw">await</span>.unwrap();
+            })
+        },
+        Default::default(),
+    )<span class="question-mark">?</span>;
+
+    <span class="prelude-val">Ok</span>((watcher, rx))
 }
 
-<span class="kw">impl </span>FromStr <span class="kw">for </span>OutputFormat {
-    <span class="kw">type </span><span class="prelude-val">Err </span>= <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str;
+<span class="doccomment">/// Watch a file or directory, sending relevant events through the provided channel.
+</span><span class="kw">async fn </span>async_watch&lt;P: AsRef&lt;Path&gt;&gt;(
+    path: P,
+    <span class="kw-2">mut </span>change_tx: UnboundedSender&lt;()&gt;,
+) -&gt; <span class="prelude-ty">Result</span>&lt;(), Box&lt;<span class="kw">dyn </span>Error&gt;&gt; {
+    <span class="kw">let </span>path = path.as_ref();
+    <span class="kw">let </span>path = std::fs::canonicalize(path)
+        .unwrap_or_else(|e| <span class="macro">panic!</span>(<span class="string">&quot;Failed to canonicalize path {path:?}: {e:}&quot;</span>));
 
-    <span class="kw">fn </span>from_str(s: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, <span class="self">Self</span>::Err&gt; {
-        <span class="kw">match </span>s {
-            <span class="string">&quot;Json&quot; </span>=&gt; <span class="prelude-val">Ok</span>(<span class="self">Self</span>::Json),
-            <span class="string">&quot;Messagepack&quot; </span>=&gt; <span class="prelude-val">Ok</span>(<span class="self">Self</span>::Messagepack),
-            <span class="kw">_ </span>=&gt; <span class="prelude-val">Err</span>(<span class="string">&quot;Unrecognized output mode&quot;</span>),
+    <span class="kw">let </span>(<span class="kw-2">mut </span>watcher, <span class="kw-2">mut </span>rx) = async_watcher()<span class="question-mark">?</span>;
+
+    <span class="comment">// Add a path to be watched. All files and directories at that path and
+    // below will be monitored for changes.
+    </span><span class="kw">let </span>watch_path = <span class="kw">if </span>path.is_dir() {
+        path.clone()
+    } <span class="kw">else </span>{
+        path.parent().unwrap().to_owned()
+    };
+    watcher.watch(watch_path.as_ref(), RecursiveMode::Recursive)<span class="question-mark">?</span>;
+
+    <span class="kw">while let </span><span class="prelude-val">Some</span>(res) = rx.next().<span class="kw">await </span>{
+        <span class="kw">match </span>res {
+            <span class="prelude-val">Ok</span>(event) =&gt; {
+                <span class="kw">if </span>path.is_dir()
+                    || event
+                        .paths
+                        .iter()
+                        .find(|candidate| <span class="kw-2">**</span>candidate == path)
+                        .is_some()
+                {
+                    change_tx.send(()).<span class="kw">await</span>.unwrap();
+                }
+            }
+            <span class="prelude-val">Err</span>(e) =&gt; <span class="macro">error!</span>(<span class="string">&quot;Watch error: {:?}&quot;</span>, e),
         }
+    }
+
+    <span class="prelude-val">Ok</span>(())
+}
+
+<span class="doccomment">/// Clap value parser for `SpirvMetadata`.
+</span><span class="kw">fn </span>spirv_metadata(s: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;SpirvMetadata, clap::Error&gt; {
+    <span class="kw">match </span>s {
+        <span class="string">&quot;none&quot; </span>=&gt; <span class="prelude-val">Ok</span>(SpirvMetadata::None),
+        <span class="string">&quot;name-variables&quot; </span>=&gt; <span class="prelude-val">Ok</span>(SpirvMetadata::NameVariables),
+        <span class="string">&quot;full&quot; </span>=&gt; <span class="prelude-val">Ok</span>(SpirvMetadata::Full),
+        <span class="kw">_ </span>=&gt; <span class="prelude-val">Err</span>(clap::Error::new(ErrorKind::InvalidValue)),
     }
 }
 
@@ -429,13 +337,8 @@
 </span><span class="kw">struct </span>ShaderBuilder {
     <span class="doccomment">/// Shader crate to compile.
     </span>path_to_crate: PathBuf,
-    <span class="doccomment">/// If set, combined SPIR-V and entrypoint metadata will be written to this file on succesful compile.
-    </span>output_path: <span class="prelude-ty">Option</span>&lt;PathBuf&gt;,
-    <span class="doccomment">/// The format to write output in.
-    </span><span class="attr">#[arg(long, default_value = <span class="string">&quot;Messagepack&quot;</span>)]
-    </span>output_format: OutputFormat,
     <span class="doccomment">/// rust-gpu compile target.
-    </span><span class="attr">#[arg(short, long, default_value = <span class="string">&quot;spirv-unknown-vulkan1.2&quot;</span>)]
+    </span><span class="attr">#[arg(short, long, default_value = <span class="string">&quot;spirv-unknown-spv1.5&quot;</span>)]
     </span>target: String,
     <span class="doccomment">/// Treat warnings as errors during compilation.
     </span><span class="attr">#[arg(long, default_value = <span class="string">&quot;false&quot;</span>)]
@@ -443,14 +346,11 @@
     <span class="doccomment">/// Compile shaders in release mode.
     </span><span class="attr">#[arg(long, default_value = <span class="string">&quot;true&quot;</span>)]
     </span>release: bool,
-    <span class="doccomment">/// Enables the provided SPIR-V capability.
-    </span><span class="attr">#[arg(long, value_parser=<span class="self">Self</span>::spirv_capability)]
-    </span>capability: Vec&lt;Capability&gt;,
     <span class="doccomment">/// Compile one .spv file per entry point.
     </span><span class="attr">#[arg(long, default_value = <span class="string">&quot;false&quot;</span>)]
     </span>multimodule: bool,
     <span class="doccomment">/// Set the level of metadata included in the SPIR-V binary.
-    </span><span class="attr">#[arg(long, value_parser=<span class="self">Self</span>::spirv_metadata, default_value = <span class="string">&quot;none&quot;</span>)]
+    </span><span class="attr">#[arg(long, value_parser=spirv_metadata, default_value = <span class="string">&quot;none&quot;</span>)]
     </span>spirv_metadata: SpirvMetadata,
     <span class="doccomment">/// Allow store from one struct type to a different type with compatible layout and members.
     </span><span class="attr">#[arg(long, default_value = <span class="string">&quot;false&quot;</span>)]
@@ -488,32 +388,9 @@
 }
 
 <span class="kw">impl </span>ShaderBuilder {
-    <span class="doccomment">/// Clap value parser for `SpirvMetadata`.
-    </span><span class="kw">fn </span>spirv_metadata(s: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;SpirvMetadata, clap::Error&gt; {
-        <span class="kw">match </span>s {
-            <span class="string">&quot;none&quot; </span>=&gt; <span class="prelude-val">Ok</span>(SpirvMetadata::None),
-            <span class="string">&quot;name-variables&quot; </span>=&gt; <span class="prelude-val">Ok</span>(SpirvMetadata::NameVariables),
-            <span class="string">&quot;full&quot; </span>=&gt; <span class="prelude-val">Ok</span>(SpirvMetadata::Full),
-            <span class="kw">_ </span>=&gt; <span class="prelude-val">Err</span>(clap::Error::new(ErrorKind::InvalidValue)),
-        }
-    }
-
-    <span class="doccomment">/// Clap value parser for `Capability`.
-    </span><span class="kw">fn </span>spirv_capability(s: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;Capability, clap::Error&gt; {
-        <span class="kw">match </span>Capability::from_str(s) {
-            <span class="prelude-val">Ok</span>(capability) =&gt; <span class="prelude-val">Ok</span>(capability),
-            <span class="prelude-val">Err</span>(<span class="kw">_</span>) =&gt; <span class="prelude-val">Err</span>(clap::Error::new(ErrorKind::InvalidValue)),
-        }
-    }
-
     <span class="doccomment">/// Builds a shader with the provided set of options.
     </span><span class="kw">pub fn </span>build_shader(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;CompileResult, SpirvBuilderError&gt; {
-        <span class="comment">// As per `spirv-builder`, apply env vars set in build.rs
-        // to work around potentially suboptimal cargo behaviour
-        </span>std::env::set_var(<span class="string">&quot;OUT_DIR&quot;</span>, <span class="macro">env!</span>(<span class="string">&quot;OUT_DIR&quot;</span>));
-        std::env::set_var(<span class="string">&quot;PROFILE&quot;</span>, <span class="macro">env!</span>(<span class="string">&quot;PROFILE&quot;</span>));
-
-        <span class="kw">let </span><span class="kw-2">mut </span>builder = SpirvBuilder::new(<span class="kw-2">&amp;</span><span class="self">self</span>.path_to_crate, <span class="kw-2">&amp;</span><span class="self">self</span>.target)
+        SpirvBuilder::new(<span class="kw-2">&amp;</span><span class="self">self</span>.path_to_crate, <span class="kw-2">&amp;</span><span class="self">self</span>.target)
             .deny_warnings(<span class="self">self</span>.deny_warnings)
             .release(<span class="self">self</span>.release)
             .multimodule(<span class="self">self</span>.multimodule)
@@ -525,244 +402,89 @@
             .scalar_block_layout(<span class="self">self</span>.scalar_block_layout)
             .skip_block_layout(<span class="self">self</span>.skip_block_layout)
             .preserve_bindings(<span class="self">self</span>.preserve_bindings)
-            .print_metadata(MetadataPrintout::None);
-
-        <span class="kw">for </span>capability <span class="kw">in </span><span class="kw-2">&amp;</span><span class="self">self</span>.capability {
-            builder = builder.capability(<span class="kw-2">*</span>capability);
-        }
-
-        builder.build()
+            .print_metadata(MetadataPrintout::None)
+            .build()
     }
-}
-
-<span class="kw">enum </span>Msg {
-    Change,
-    Build(<span class="prelude-ty">Result</span>&lt;CompileResult, SpirvBuilderError&gt;),
-}
-
-<span class="doccomment">/// Instantiate an async watcher and return it alongside a channel to receive events on.
-</span><span class="kw">fn </span>async_watcher() -&gt; notify::Result&lt;(RecommendedWatcher, Receiver&lt;notify::Result&lt;Event&gt;&gt;)&gt; {
-    <span class="kw">let </span>(tx, rx) = unbounded();
-
-    <span class="comment">// Automatically select the best implementation for your platform.
-    // You can also access each implementation directly e.g. INotifyWatcher.
-    </span><span class="kw">let </span>watcher = RecommendedWatcher::new(
-        <span class="kw">move </span>|res| {
-            future::block_on(<span class="kw">async </span>{
-                tx.send(res).<span class="kw">await</span>.unwrap();
-            })
-        },
-        Default::default(),
-    )<span class="question-mark">?</span>;
-
-    <span class="prelude-val">Ok</span>((watcher, rx))
-}
-
-<span class="doccomment">/// Watch a file or directory, sending relevant events through the provided channel.
-</span><span class="kw">async fn </span>async_watch&lt;P: AsRef&lt;Path&gt;&gt;(
-    path: P,
-    change_tx: Sender&lt;Msg&gt;,
-) -&gt; <span class="prelude-ty">Result</span>&lt;(), Box&lt;<span class="kw">dyn </span>Error&gt;&gt; {
-    <span class="kw">let </span>path = path.as_ref();
-    <span class="kw">let </span>path = std::fs::canonicalize(path)
-        .unwrap_or_else(|e| <span class="macro">panic!</span>(<span class="string">&quot;Failed to canonicalize path {path:?}: {e:}&quot;</span>));
-
-    <span class="kw">let </span>(<span class="kw-2">mut </span>watcher, rx) = async_watcher()<span class="question-mark">?</span>;
-
-    <span class="comment">// Add a path to be watched. All files and directories at that path and
-    // below will be monitored for changes.
-    </span><span class="kw">let </span>watch_path = <span class="kw">if </span>path.is_dir() {
-        path.clone()
-    } <span class="kw">else </span>{
-        path.parent().unwrap().to_owned()
-    };
-    watcher.watch(watch_path.as_ref(), RecursiveMode::Recursive)<span class="question-mark">?</span>;
-
-    <span class="kw">while let </span><span class="prelude-val">Ok</span>(res) = rx.recv().<span class="kw">await </span>{
-        <span class="kw">match </span>res {
-            <span class="prelude-val">Ok</span>(event) =&gt; {
-                <span class="kw">if </span>path.is_dir()
-                    || event
-                        .paths
-                        .iter()
-                        .find(|candidate| <span class="kw-2">**</span>candidate == path)
-                        .is_some()
-                {
-                    change_tx.send(Msg::Change).<span class="kw">await</span>.unwrap();
-                }
-            }
-            <span class="prelude-val">Err</span>(e) =&gt; <span class="macro">error!</span>(<span class="string">&quot;Watch error: {:?}&quot;</span>, e),
-        }
-    }
-
-    <span class="prelude-val">Ok</span>(())
-}
-
-<span class="kw">async fn </span>handle_compile_result(
-    result: CompileResult,
-    output_path: <span class="prelude-ty">Option</span>&lt;PathBuf&gt;,
-    output_format: OutputFormat,
-) {
-    <span class="macro">info!</span>(<span class="string">&quot;Entry Points:&quot;</span>);
-    <span class="kw">for </span>entry <span class="kw">in </span><span class="kw-2">&amp;</span>result.entry_points {
-        <span class="macro">println!</span>(<span class="string">&quot;{entry:}&quot;</span>);
-    }
-
-    <span class="kw">let </span>entry_points = result.entry_points;
-
-    <span class="macro">println!</span>();
-
-    <span class="macro">info!</span>(<span class="string">&quot;Modules:&quot;</span>);
-    <span class="kw">match </span><span class="kw-2">&amp;</span>result.module {
-        spirv_builder::ModuleResult::SingleModule(single) =&gt; {
-            <span class="macro">println!</span>(<span class="string">&quot;{single:?}&quot;</span>);
-        }
-
-        spirv_builder::ModuleResult::MultiModule(multi) =&gt; {
-            <span class="kw">for </span>(k, module) <span class="kw">in </span>multi {
-                <span class="macro">println!</span>(<span class="string">&quot;{k:}: {module:?}&quot;</span>);
-            }
-        }
-    };
-
-    <span class="kw">let </span><span class="prelude-val">Some</span>(output_path) = output_path <span class="kw">else </span>{
-                                    <span class="kw">return
-                                </span>};
-
-    <span class="kw">let </span>modules = <span class="kw">match </span>result.module {
-        spirv_builder::ModuleResult::SingleModule(single) =&gt; {
-            <span class="kw">let </span>module = async_fs::read(single)
-                .<span class="kw">await
-                </span>.expect(<span class="string">&quot;Failed to read module file&quot;</span>);
-            RustGpuBuilderModules::Single(module)
-        }
-
-        spirv_builder::ModuleResult::MultiModule(multi) =&gt; {
-            <span class="kw">let </span><span class="kw-2">mut </span>out = BTreeMap::default();
-            <span class="kw">for </span>(k, module) <span class="kw">in </span>multi {
-                <span class="kw">let </span>module = async_fs::read(module)
-                    .<span class="kw">await
-                    </span>.expect(<span class="string">&quot;Failed to read module file&quot;</span>);
-                out.insert(k, module);
-            }
-            RustGpuBuilderModules::Multi(out)
-        }
-    };
-
-    <span class="kw">let </span>out = RustGpuBuilderOutput {
-        entry_points,
-        modules,
-    };
-
-    <span class="kw">match </span>output_format {
-        OutputFormat::Json =&gt; {
-            <span class="kw">let </span>out = serde_json::to_string_pretty(<span class="kw-2">&amp;</span>out).expect(<span class="string">&quot;Failed to serialize output&quot;</span>);
-            async_fs::write(<span class="kw-2">&amp;</span>output_path, out)
-                .<span class="kw">await
-                </span>.expect(<span class="string">&quot;Failed to write output&quot;</span>);
-        }
-        OutputFormat::Messagepack =&gt; {
-            <span class="kw">let </span>out = rmp_serde::to_vec_named(<span class="kw-2">&amp;</span>out).expect(<span class="string">&quot;Failed to serialize output&quot;</span>);
-            async_fs::write(<span class="kw-2">&amp;</span>output_path, out)
-                .<span class="kw">await
-                </span>.expect(<span class="string">&quot;Failed to write output&quot;</span>);
-        }
-    }
-    <span class="macro">println!</span>();
-    <span class="macro">info!</span>(<span class="string">&quot;Wrote output to {output_path:?}&quot;</span>);
 }
 
 <span class="kw">fn </span>main() {
     tracing_subscriber::fmt().init();
 
-    <span class="kw">let </span><span class="kw-2">mut </span>args = ShaderBuilder::parse();
+    <span class="kw">let </span>args = ShaderBuilder::parse();
 
     <span class="macro">println!</span>();
     <span class="macro">info!</span>(<span class="string">&quot;Shader Builder&quot;</span>);
     <span class="macro">println!</span>();
 
     <span class="macro">info!</span>(<span class="string">&quot;Building shader...&quot;</span>);
-    <span class="macro">println!</span>();
-    <span class="kw">if let </span><span class="prelude-val">Ok</span>(result) = args.build_shader() {
-        future::block_on(handle_compile_result(
-            result,
-            args.output_path.clone(),
-            args.output_format,
-        ));
+    <span class="kw">if </span>args.build_shader().is_ok() {
+        <span class="macro">info!</span>(<span class="string">&quot;Build complete!&quot;</span>);
     } <span class="kw">else </span>{
         <span class="macro">error!</span>(<span class="string">&quot;Build failed!&quot;</span>);
     }
     <span class="macro">println!</span>();
 
-    <span class="kw">let </span><span class="prelude-val">Some</span>(watch_paths) = args.watch_paths.take() <span class="kw">else </span>{
-        <span class="kw">return
-    </span>};
+    <span class="kw">if </span>args.watch_paths.is_none() {
+        <span class="kw">return</span>;
+    };
 
-    <span class="kw">let </span>ex = Executor::new();
-    <span class="kw">let </span>(change_tx, change_rx) = unbounded::&lt;Msg&gt;();
-    <span class="kw">let </span>(build_tx, build_rx) = unbounded::&lt;Msg&gt;();
+    <span class="kw">let </span>pool = ThreadPool::new().expect(<span class="string">&quot;Failed to build pool&quot;</span>);
+    <span class="kw">let </span>(change_tx, <span class="kw-2">mut </span>change_rx) = mpsc::unbounded::&lt;()&gt;();
+    <span class="kw">let </span>(build_tx, <span class="kw-2">mut </span>build_rx) = mpsc::unbounded::&lt;bool&gt;();
 
-    Parallel::new()
-        <span class="comment">// Spawn file watchers
-        </span>.each(watch_paths, |path| {
-            <span class="macro">info!</span>(<span class="string">&quot;Watching {path:} for changes...&quot;</span>);
-            future::block_on(<span class="kw">async </span>{
-                async_watch(path, change_tx)
-                    .<span class="kw">await
-                    </span>.expect(<span class="string">&quot;Async watcher error&quot;</span>);
-            });
-        })
-        <span class="comment">// Spawn message Bus
-        </span>.add(|| {
-            <span class="kw">let </span><span class="kw-2">mut </span>building = <span class="bool-val">false</span>;
-            <span class="kw">loop </span>{
-                <span class="kw">match </span>future::block_on(futures_lite::future::race(
-                    change_rx.recv(),
-                    build_rx.recv(),
-                )) {
-                    <span class="comment">// On file change, spawn a build task
-                    </span><span class="prelude-val">Ok</span>(Msg::Change) =&gt; {
-                        <span class="kw">if </span>!building {
-                            building = <span class="bool-val">true</span>;
-                            <span class="macro">println!</span>();
-                            <span class="macro">info!</span>(<span class="string">&quot;Building shader...&quot;</span>);
-                            <span class="macro">println!</span>();
-                            ex.spawn({
-                                <span class="kw">let </span>build_tx = build_tx.clone();
-                                <span class="kw">let </span>args = args.clone();
-                                <span class="kw">async move </span>{
-                                    build_tx
-                                        .send(Msg::Build(args.build_shader()))
-                                        .<span class="kw">await
-                                        </span>.unwrap();
-                                }
-                            })
-                            .detach();
-                        }
-                    }
-                    <span class="comment">// On build complete, spawn a handle_compile_result task
-                    </span><span class="prelude-val">Ok</span>(Msg::Build(result)) =&gt; {
-                        <span class="kw">if let </span><span class="prelude-val">Ok</span>(result) = result {
-                            <span class="kw">let </span>output_path = args.output_path.clone();
-                            <span class="kw">let </span>output_format = args.output_format;
-                            ex.spawn(handle_compile_result(result, output_path, output_format))
-                                .detach();
-                        } <span class="kw">else </span>{
-                            <span class="macro">error!</span>(<span class="string">&quot;Build failed!&quot;</span>);
-                        }
-                        <span class="macro">println!</span>();
-                        building = <span class="bool-val">false</span>;
-                    }
-                    <span class="prelude-val">Err</span>(e) =&gt; {
-                        <span class="macro">panic!</span>(<span class="string">&quot;{e:}&quot;</span>)
-                    }
-                }
+    <span class="kw">let </span><span class="kw-2">mut </span>building = <span class="bool-val">false</span>;
+
+    <span class="kw">let </span>fut_values = <span class="kw">async move </span>{
+        <span class="kw">let </span><span class="kw-2">mut </span>args = args;
+
+        <span class="kw">let </span><span class="prelude-val">Some</span>(watch_paths) = args.watch_paths.take() <span class="kw">else </span>{
+            <span class="macro">unreachable!</span>();
+        };
+
+        <span class="macro">println!</span>();
+        {
+            <span class="kw">for </span>path <span class="kw">in </span>watch_paths {
+                <span class="macro">info!</span>(<span class="string">&quot;Watching {path:} for changes...&quot;</span>);
+                <span class="kw">let </span>change_tx = change_tx.clone();
+                pool.spawn_ok(<span class="kw">async move </span>{
+                    async_watch(path, change_tx).<span class="kw">await</span>.unwrap();
+                });
             }
-        })
-        <span class="comment">// Run executor on main thread
-        </span>.finish(|| <span class="kw">loop </span>{
-            future::block_on(ex.tick())
-        });
+        }
+
+        <span class="kw">loop </span>{
+            <span class="kw">let </span><span class="kw-2">mut </span>file_change = change_rx.next();
+            <span class="kw">let </span><span class="kw-2">mut </span>build_complete = build_rx.next();
+            <span class="macro">select! </span>{
+                <span class="kw">_ </span>= file_change =&gt; {
+                    <span class="kw">if </span>!building {
+                        building = <span class="bool-val">true</span>;
+                        <span class="macro">info!</span>(<span class="string">&quot;Building shader...&quot;</span>);
+                        pool.spawn_ok({
+                            <span class="kw">let </span><span class="kw-2">mut </span>build_tx = build_tx.clone();
+                            <span class="kw">let </span>args = args.clone();
+                            <span class="kw">async move </span>{
+                                build_tx.send(args.build_shader().is_ok()).<span class="kw">await</span>.unwrap();
+                            }
+                        })
+                    }
+                },
+                result = build_complete =&gt; {
+                    <span class="kw">let </span>result = result.unwrap();
+                    <span class="kw">if </span>result {
+                        <span class="macro">info!</span>(<span class="string">&quot;Build complete!&quot;</span>);
+                    }
+                    <span class="kw">else </span>{
+                        <span class="macro">error!</span>(<span class="string">&quot;Build failed!&quot;</span>);
+                    }
+                    <span class="macro">println!</span>();
+                    building = <span class="bool-val">false</span>;
+                }
+            };
+        }
+    };
+
+    executor::block_on(fut_values);
 }
 </code></pre></div>
-</section></main><div id="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="rust_gpu_builder" data-themes="" data-resource-suffix="" data-rustdoc-version="1.69.0-nightly (44cfafe2f 2023-03-03)" data-search-js="search-894761433ba8c506.js" data-settings-js="settings-f0c5c39777a9a2f6.js" data-settings-css="settings-0bcba95ff279c1db.css" ></div></body></html>
+</section></main><div id="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="rust_gpu_builder" data-themes="" data-resource-suffix="" data-rustdoc-version="1.68.0-nightly (5ce39f42b 2023-01-20)" data-search-js="search-98d53477a794af0b.js" data-settings-js="settings-c3c521c753752a1a.js" data-settings-css="settings-ab1d4ae2ec52020e.css" ></div></body></html>

@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"enum":["Msg","OutputFormat"],"fn":["async_watch","async_watcher","handle_compile_result","main"],"opaque":[""],"static":["CALLSITE","META"],"struct":["ShaderBuilder"]};
+window.SIDEBAR_ITEMS = {"fn":[["async_watch","Watch a file or directory, sending relevant events through the provided channel."],["async_watcher","Instantiate an async watcher and return it alongside a channel to receive events on."],["main",""],["spirv_metadata","Clap value parser for `SpirvMetadata`."]],"struct":[["ShaderBuilder","Clap application struct."]]};

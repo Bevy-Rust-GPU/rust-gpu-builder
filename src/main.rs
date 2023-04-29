@@ -271,9 +271,13 @@ async fn handle_compile_result(
         modules,
     };
 
+    let output_dir = output_path.parent().expect("Output path must be a valid directory");
+    async_fs::create_dir_all(&output_dir).await.ok();
+
     match output_format {
         OutputFormat::Json => {
             let out = serde_json::to_string_pretty(&out).expect("Failed to serialize output");
+
             async_fs::write(&output_path, out)
                 .await
                 .expect("Failed to write output");
@@ -300,14 +304,17 @@ fn main() {
 
     info!("Building shader...");
     println!();
-    if let Ok(result) = args.build_shader() {
-        future::block_on(handle_compile_result(
-            result,
-            args.output_path.clone(),
-            args.output_format,
-        ));
-    } else {
-        error!("Build failed!");
+    match args.build_shader() {
+        Ok(result) => {
+            future::block_on(handle_compile_result(
+                result,
+                args.output_path.clone(),
+                args.output_format,
+            ));
+        }
+        Err(e) => {
+            error!("Build failed!\n{e:}");
+        }
     }
     println!();
 

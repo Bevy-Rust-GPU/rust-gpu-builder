@@ -58,7 +58,7 @@ struct ShaderBuilder {
     #[arg(long, default_value = "false")]
     deny_warnings: bool,
     /// Compile shaders in release mode.
-    #[arg(long, default_value = "true")]
+    #[arg(long, default_value = "false")]
     release: bool,
     /// Enables the provided SPIR-V capability.
     #[arg(long, value_parser=Self::spirv_capability)]
